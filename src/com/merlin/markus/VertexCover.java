@@ -153,11 +153,90 @@ public class VertexCover {
                         return solveWith(graph, k - 2, solution);
                     }
                 }
-           /* case 3:
-                break;*/
+            case 3:
+                Set<Integer> abcNeighbours = new HashSet<>(graph.get(neighbours[0]));
+                abcNeighbours.addAll(graph.get(neighbours[1]));
+                abcNeighbours.addAll(graph.get(neighbours[2]));
+
+                if(abcNeighbours.size() == graph.get(neighbours[0]).size() + graph.get(neighbours[1]).size() + graph.get(neighbours[2]).size() - 2) {
+                    HashMap<Integer, Set<Integer>> graphCopy = copyGraph(graph);
+                    Set<Integer> solutionCopy = new HashSet<>(solution);
+
+                    Set<Integer> bcNeighboursAndA = new HashSet<>(graph.get(neighbours[1]));
+                    bcNeighboursAndA.addAll(graph.get(neighbours[2]));
+                    bcNeighboursAndA.add(neighbours[0]);
+                    addNodesToSolution(bcNeighboursAndA, solutionCopy, graphCopy);
+                    Set<Integer> result = solveWith(graphCopy, k - bcNeighboursAndA.size(), solutionCopy);
+                    if(result != null) {
+                        return result;
+                    }
+
+                    graphCopy = copyGraph(graph);
+                    solutionCopy = new HashSet<>(solution);
+                    addNodesToSolution(graph.get(neighbours[0]), solutionCopy, graphCopy);
+                    result = solveWith(graphCopy, k - graph.get(neighbours[0]).size(), solutionCopy);
+                    if(result != null) {
+                        return result;
+                    }
+
+                    addNodesToSolution(neighbours, solution, graph);
+                    return solveWith(graph, k - neighbours.length, solution);
+                } else {
+                    int aNode = 0, bNode = 0, cNode = 0;
+                    if (areNeigbours(neighbours[0], neighbours[1], graph)) {
+                        aNode = neighbours[0];
+                        bNode = neighbours[1];
+                        cNode = neighbours[2];
+                    } else if (areNeigbours(neighbours[1], neighbours[2], graph)) {
+                        aNode = neighbours[1];
+                        bNode = neighbours[2];
+                        cNode = neighbours[0];
+                    } else if (areNeigbours(neighbours[0], neighbours[2], graph)) {
+                        aNode = neighbours[0];
+                        bNode = neighbours[2];
+                        cNode = neighbours[1];
+                    }
+
+                    if (aNode * bNode * cNode != 0) {
+                        HashMap<Integer, Set<Integer>> graphCopy = copyGraph(graph);
+                        Set<Integer> solutionCopy = new HashSet<>(solution);
+
+                        addNodesToSolution(graph.get(cNode), solutionCopy, graphCopy);
+                        Set<Integer> result = solveWith(graphCopy, k - graph.get(cNode).size(), solutionCopy);
+                        if(result != null) {
+                            return result;
+                        }
+
+                        addNodesToSolution(neighbours, solution, graph);
+                        return solveWith(graph, k - neighbours.length, solution);
+                    }
+
+                    HashMap<Integer, Set<Integer>> graphCopy = copyGraph(graph);
+                    Set<Integer> solutionCopy = new HashSet<>(solution);
+
+                    addNodesToSolution(neighbours, solutionCopy, graphCopy);
+                    Set<Integer> result = solveWith(graphCopy, k - neighbours.length, solutionCopy);
+                    if(result != null) {
+                        return result;
+                    }
+                    if (haveTwoCommonNeigbours(neighbours[0], neighbours[1], graph)) {
+                        aNode = neighbours[0];
+                        bNode = neighbours[1];
+                    } else if (haveTwoCommonNeigbours(neighbours[1], neighbours[2], graph)) {
+                        aNode = neighbours[1];
+                        bNode = neighbours[2];
+                    } else if (haveTwoCommonNeigbours(neighbours[0], neighbours[2], graph)) {
+                        aNode = neighbours[0];
+                        bNode = neighbours[2];
+                    }
+                    int commonNeighbour = getCommonNeighbour(aNode, bNode, nextNode, graph);
+                    addNodeToSolution(nextNode, solution, graph);
+                    addNodeToSolution(commonNeighbour, solution, graph);
+                    return solveWith(graph, k - 2, solution);
+
+                }
             default:
                 HashMap<Integer, Set<Integer>> graphCopy = copyGraph(graph);
-
                 Set<Integer> solutionCopy = new HashSet<>(solution);
 
                 addNodesToSolution(neighbours, solutionCopy, graphCopy);
@@ -168,6 +247,22 @@ public class VertexCover {
                 addNodeToSolution(nextNode, solution, graph);
                 return solveWith(graph, k - 1, solution);
         }
+    }
+
+    private int getCommonNeighbour(Integer a, Integer b, int v, HashMap<Integer, Set<Integer>> graph) {
+        for (int aNeighbour: graph.get(a)) {
+            if(aNeighbour != v && graph.get(b).contains(aNeighbour)) {
+                return aNeighbour;
+            }
+        }
+        return 0;
+    }
+
+    private boolean haveTwoCommonNeigbours(Integer a, Integer b, HashMap<Integer, Set<Integer>> graph) {
+        Set<Integer> abNeighbours = new HashSet<>(graph.get(a));
+        abNeighbours.addAll(graph.get(b));
+
+        return graph.get(a).size() + graph.get(b).size() - 2 >= abNeighbours.size();
     }
 
     public static HashMap<Integer, Set<Integer>> copyGraph(HashMap<Integer, Set<Integer>> original)
