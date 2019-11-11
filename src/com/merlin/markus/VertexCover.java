@@ -43,7 +43,6 @@ public class VertexCover {
                 originalGraph.remove(node);
             }
         }
-        System.out.println("lol");
     }
 
     public static void main(String[] args) {
@@ -102,7 +101,6 @@ public class VertexCover {
 
     private Set<Integer> solve() {
         for (int k = 1; k <= originalGraph.size(); k++) {
-            System.out.println("lol " + k);
             Set<Integer> result = solveWith(copyGraph(originalGraph), k, new HashSet<>());
             if (result != null) {
                 return result;
