@@ -239,6 +239,26 @@ public class FeedbackVertexSet {
     }
 
     private HashMap<Integer, Set<Integer>> removeNodesFromGraph(HashMap<Integer, Set<Integer>> kPlusOneGraph, ArrayList<Integer> x) {
+        boolean[] isInX = new boolean[kPlusOneGraph.size()];
+        for(int node : x) {
+            isInX[node - 1] = true;
+        }
+
+        HashMap<Integer, Set<Integer>> newGraph = new HashMap<>();
+        for(int node : kPlusOneGraph.keySet()) {
+            if(isInX[node-1]) continue;
+
+            HashSet<Integer> neigbours = new HashSet<Integer>();
+
+            for(int neighbour : kPlusOneGraph.get(node)) {
+                if(!isInX[neighbour-1]) {
+                    neigbours.add(neighbour);
+                }
+            }
+            newGraph.put(node,neigbours);
+        }
+        return newGraph;
+/*
         HashMap<Integer, Set<Integer>> newGraph = new HashMap<>(kPlusOneGraph);
         for (int node : x) {
             newGraph.remove(node);
@@ -250,6 +270,7 @@ public class FeedbackVertexSet {
         }
 
         return newGraph;
+        /**/
     }
 
     private HashMap<Integer,Set<Integer>> getSubGraph(HashMap<Integer, Set<Integer>> originalGraph, int size) {
