@@ -12,8 +12,8 @@ public class FeedbackVertexSet {
     private HashMap<Integer, Set<Integer>> originalGraph;
 
     public FeedbackVertexSet(String fileUrl) {
-       /* Integer[] a = {1, 2, 3, 4};
-        Integer[] b = {1, 3, 2, 4};
+       /*Integer[] a = {1, 2, 3, 4, 5};
+        Integer[] b = {1, 3, 2, 5, 4};
         ArrayList<Integer> lcs = this.LCS(new ArrayList<>(Arrays.asList(a)), new ArrayList<>(Arrays.asList(b)));
         System.out.println(lcs.size());*/
 
@@ -151,6 +151,35 @@ public class FeedbackVertexSet {
     }
 
     private ArrayList<Integer> LCS(ArrayList<Integer> a, ArrayList<Integer> b) {
+        ArrayList<Integer>[] lastRow = new ArrayList[a.size()+1];
+        ArrayList<Integer>[] currentRow = new ArrayList[a.size()+1];
+
+        for (int i = 0; i <= b.size(); i++) {
+            lastRow[i] = new ArrayList<Integer>();
+        }
+
+        for (int i = 0; i < a.size(); i++) {
+            currentRow[0] = new ArrayList<Integer>();
+            for (int j = 1; j < b.size() + 1; j++) {
+                if(a.get(i).equals(b.get(j - 1))) {
+                    lastRow[j-1].add(a.get(i));
+                    currentRow[j] = lastRow[j-1];
+                } else {
+                    ArrayList<Integer> commonString;
+                    if(lastRow[j].size() > currentRow[j-1].size()) {
+                        commonString = new ArrayList<>(lastRow[j]);
+                    } else {
+                        commonString = new ArrayList<>(currentRow[j-1]);
+                    }
+                    currentRow[j] = commonString;
+                }
+            }
+            lastRow = currentRow;
+            currentRow = new ArrayList[a.size()+1];
+        }
+        return lastRow[a.size()];
+
+        /*
         if(a.isEmpty() || b.isEmpty()) return new ArrayList<>();
         int lastA = a.get(a.size() - 1);
         int lastB = b.get(b.size() - 1);
@@ -170,10 +199,11 @@ public class FeedbackVertexSet {
             ArrayList<Integer> solution2 = LCS(a, bCopy);
             return solution1.size() > solution2.size() ? solution1 : solution2;
         }
+        */
     }
 
     private boolean isCyclic(int node, ArrayList<Integer> totalOrderInY, HashMap<Integer, Set<Integer>> graphWithoutX) {
-        OptionalInt minOutgoingPosition = graphWithoutX.get(node).stream().map(totalOrderInY::indexOf).mapToInt((lol) -> lol).min();
+        OptionalInt minOutgoingPosition = graphWithoutX.get(node).stream().map(totalOrderInY::indexOf).filter((index) -> index >= 0).mapToInt((lol) -> lol).min();
         OptionalInt maxIncomingPosition = totalOrderInY.stream().filter(n -> graphWithoutX.get(n).contains(node)).map(totalOrderInY::indexOf).mapToInt((lol) -> lol).max();
         if(!minOutgoingPosition.isPresent() || !maxIncomingPosition.isPresent()) return false;
         return maxIncomingPosition.getAsInt() > minOutgoingPosition.getAsInt();
@@ -183,7 +213,7 @@ public class FeedbackVertexSet {
         HashMap<Integer, Integer> outDegreeY = new HashMap<>();
         for(int node : y) {
             Set<Integer> neighbours = graphWithoutX.get(node);
-            outDegreeY.put(node, neighbours.parallelStream().filter(y::contains).collect(Collectors.toSet()).size());
+            outDegreeY.put(node, (int) neighbours.stream().filter(y::contains).count());
         }
         ArrayList<Integer> totalOrderInY = new ArrayList<>();
         while(!outDegreeY.isEmpty()) {
